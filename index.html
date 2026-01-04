@@ -3,259 +3,430 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MotoPay Direct - Générateur de QR Code</title>
+    <title>SpeedPay - Générateur de Badge</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --primary: #FFD700; /* Jaune moto */
-            --dark: #2c3e50;
-            --light: #ecf0f1;
-            --accent: #e74c3c;
+            /* Palette Pro Fintech */
+            --primary: #FFC107;      /* Jaune SpeedPay */
+            --primary-hover: #ffca2c;
+            --dark: #111827;         /* Noir Profond (Presque noir) */
+            --gray: #F3F4F6;         /* Fond clair */
+            --text-main: #1F2937;
+            --text-muted: #6B7280;
+            --border: #E5E7EB;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --radius: 12px;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', sans-serif;
             margin: 0;
-            background-color: var(--light);
-            color: var(--dark);
-            line-height: 1.6;
+            background-color: var(--gray);
+            color: var(--text-main);
+            -webkit-font-smoothing: antialiased;
         }
 
+        /* --- Header Minimaliste --- */
         header {
-            background-color: var(--dark);
+            background: var(--dark);
             color: white;
-            padding: 20px;
+            padding: 40px 20px 80px; /* Padding bas large pour l'effet de superposition */
             text-align: center;
-            border-bottom: 5px solid var(--primary);
+            position: relative;
         }
 
-        h1 { margin: 0; font-size: 1.8rem; }
-        .subtitle { color: var(--primary); font-size: 0.9rem; }
+        header h1 { 
+            margin: 0; 
+            font-size: 2.2rem; 
+            font-weight: 800;
+            font-style: italic;
+            letter-spacing: -1px;
+        }
+        
+        .brand-highlight { color: var(--primary); }
+        header p { color: #9CA3AF; font-size: 1rem; margin-top: 8px; font-weight: 300; }
 
+        /* --- Conteneur Principal --- */
         .container {
             max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
+            margin: -60px auto 40px; /* Remonte sur le header */
+            padding: 0 20px;
+            position: relative;
+            z-index: 10;
         }
 
-        /* Section Cartes */
+        /* --- Carte Principale --- */
         .card {
             background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+            border-radius: var(--radius);
+            padding: 40px;
+            box-shadow: var(--shadow-md);
             text-align: center;
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
         }
 
-        .input-group {
-            margin: 20px 0;
+        h2 { 
+            color: var(--dark); 
+            font-size: 1.5rem; 
+            margin-bottom: 10px; 
+            font-weight: 600;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        /* --- Formulaire Compact & Pro --- */
+        .input-wrapper {
+            max-width: 380px; /* Réduit la largeur */
+            margin: 0 auto 20px;
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1rem;
         }
 
         input[type="text"] {
-            width: 80%;
-            padding: 15px;
-            font-size: 1.2rem;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            text-align: center;
+            width: 100%;
+            padding: 12px 16px 12px 45px; /* Padding réduit */
+            font-size: 1.1rem; /* Police réduite */
+            border: 1px solid #D1D5DB;
+            border-radius: 8px;
             outline: none;
-            transition: border-color 0.3s;
+            box-sizing: border-box;
+            font-family: 'Inter', monospace; /* Monospace pour les chiffres c'est mieux */
+            font-weight: 500;
+            background: #F9FAFB;
+            transition: all 0.2s;
+            color: var(--dark);
         }
 
         input[type="text"]:focus {
             border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.2);
         }
 
         .btn {
             background-color: var(--dark);
             color: white;
             border: none;
-            padding: 15px 30px;
+            padding: 12px 24px;
             font-size: 1rem;
-            border-radius: 50px;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: bold;
-            transition: transform 0.2s;
-            margin-top: 10px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .btn:hover { transform: scale(1.05); background-color: #34495e; }
-        .btn-download { background-color: var(--accent); }
+        .btn:hover { 
+            background-color: black; 
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--dark);
+            font-weight: 600;
+        }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+
+        /* --- Zone Résultat --- */
+        #result-area {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px dashed var(--border);
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         #qrcode-container {
-            margin: 20px auto;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 200px;
-        }
-
-        /* Instructions visuelles */
-        .steps {
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            text-align: left;
-            margin-top: 20px;
-        }
-        .step {
-            flex: 1;
-            min-width: 250px;
-            margin: 10px;
+            display: inline-block;
             padding: 15px;
-            background: #f9f9f9;
-            border-radius: 10px;
-            border-left: 4px solid var(--primary);
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 20px;
         }
-        .step h3 { margin-top: 0; color: var(--dark); }
+        
+        #qrcode-container img, #qrcode-container canvas {
+            display: block; /* Supprime l'espace fantôme sous le canvas */
+        }
 
+        .success-msg {
+            color: #10B981;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        /* --- Section "Comment ça marche" --- */
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            text-align: left;
+        }
+
+        .step-item {
+            background: #F9FAFB;
+            padding: 20px;
+            border-radius: var(--radius);
+            border: 1px solid transparent;
+            transition: 0.2s;
+        }
+
+        .step-item:hover {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .step-num {
+            background: var(--dark);
+            color: var(--primary);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .step-item h4 { margin: 0; font-size: 1rem; color: var(--dark); }
+        .step-item p { margin: 0; font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+
+        /* --- Footer --- */
         footer {
             text-align: center;
-            padding: 20px;
-            color: #7f8c8d;
-            font-size: 0.8rem;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
         }
 
-        /* Classe utilitaire pour cacher des éléments */
-        .hidden { display: none; }
+        /* Utilitaire pour cacher le logo source */
+        #source-logo { display: none; }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .card { padding: 25px 20px; }
+            header { padding-bottom: 70px; }
+            h2 { font-size: 1.3rem; }
+        }
     </style>
 </head>
 <body>
 
+    <img id="source-logo" src="logo.png" alt="SpeedPay Logo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/1177/1177568.png'">
+
     <header>
-        <h1>MotoPay Direct 🏍️</h1>
-        <div class="subtitle">Générez votre QR Code de paiement instantané</div>
+        <h1>Speed<span class="brand-highlight">Pay</span></h1>
+        <p>Solution de paiement professionnel</p>
     </header>
 
     <div class="container">
         
         <div class="card">
-            <h2>Comment ça marche ?</h2>
-            <div class="steps">
-                <div class="step">
-                    <h3>1. Pour le Motard</h3>
-                    <p>Entrez votre code USSD complet (ex: MOMO Pay). Téléchargez le PDF et collez le QR Code sur votre casque.</p>
+            <h2>Générateur de Badge</h2>
+            <p class="subtitle">Saisissez votre code USSD ci-dessous pour créer votre badge de paiement officiel.</p>
+            
+            <div class="input-wrapper">
+                <i class="fas fa-hashtag"></i>
+                <input type="text" id="ussdInput" placeholder="ex: *182*8*1*0700000#" value="*182*8*1*07000000#">
+            </div>
+
+            <button class="btn btn-primary" onclick="generateQRWithLogo()">
+                Créer le QR Code <i class="fas fa-arrow-right"></i>
+            </button>
+
+            <div id="result-area">
+                <div id="qrcode-container"></div>
+                
+                <div class="success-msg">
+                    <i class="fas fa-check-circle"></i> 
+                    <span>Badge généré avec succès</span>
                 </div>
-                <div class="step">
-                    <h3>2. Pour le Client</h3>
-                    <p>Le client scanne le QR Code avec sa caméra. Son téléphone compose automatiquement le code pour payer.</p>
+                
+                <div style="margin-top: 20px;">
+                    <button class="btn" onclick="downloadPDF()">
+                        <i class="fas fa-download"></i> Télécharger PDF A4
+                    </button>
                 </div>
             </div>
         </div>
 
-        <div class="card" id="generator-section">
-            <h2>Créer mon Code</h2>
-            <p>Entrez le code exact que vous tapez sur votre téléphone :</p>
-            
-            <div class="input-group">
-                <input type="text" id="ussdInput" placeholder="Ex: *182*8*1*07426422#" value="*182*8*1*07426422#">
+        <div class="steps-grid">
+            <div class="step-item">
+                <div class="step-header">
+                    <div class="step-num">1</div>
+                    <h4>Générez</h4>
+                </div>
+                <p>Créez votre badge unique avec votre code USSD. Le logo SpeedPay est intégré automatiquement.</p>
             </div>
 
-            <button class="btn" onclick="generateQR()">Générer le QR Code</button>
+            <div class="step-item">
+                <div class="step-header">
+                    <div class="step-num">2</div>
+                    <h4>Affichez</h4>
+                </div>
+                <p>Imprimez le PDF, plastifiez-le et placez-le visiblement (gilet, comptoir, véhicule).</p>
+            </div>
 
-            <div id="result-area" class="hidden">
-                <div id="qrcode-container"></div>
-                <p><em>Scannez ce code pour tester !</em></p>
-                <button class="btn btn-download" onclick="downloadPDF()">📥 Télécharger le PDF (A4)</button>
+            <div class="step-item">
+                <div class="step-header">
+                    <div class="step-num">3</div>
+                    <h4>Encaissez</h4>
+                </div>
+                <p>Le client scanne. Le code se compose seul. Paiement validé en quelques secondes.</p>
             </div>
         </div>
 
     </div>
 
     <footer>
-        © 2024 MotoPay Direct - Simplifiez vos courses.
+        <p>&copy; 2026 SpeedPay Pro. Tous droits réservés.</p>
     </footer>
 
     <script>
-        // Initialisation des variables
-        let qrcodeObj = null;
-
-        function generateQR() {
+        function generateQRWithLogo() {
             const input = document.getElementById('ussdInput').value.trim();
             const resultArea = document.getElementById('result-area');
             const container = document.getElementById('qrcode-container');
+            const logoImg = document.getElementById('source-logo');
 
-            // Validation simple
-            if (!input.startsWith('*') || !input.endsWith('#')) {
-                alert("Le code doit commencer par * et finir par # (Format USSD standard).");
+            if (input.length < 3) {
+                alert("Veuillez entrer un code valide.");
                 return;
             }
 
-            // Nettoyer l'ancien code
+            // Reset
             container.innerHTML = "";
-            resultArea.classList.remove('hidden');
+            resultArea.style.display = 'block';
 
-            // Le format 'tel:' permet au téléphone de lancer l'appel
-            // Note: Certains scanners préfèrent le texte brut, mais tel: est plus standard pour l'action.
-            // Pour le code USSD, on utilise souvent simplement le texte brut car les scanners intelligents le reconnaissent.
-            // Nous allons utiliser le texte brut pour garantir la compatibilité USSD maximale.
-            const qrContent = input; 
-
-            // Génération du QR Code
-            qrcodeObj = new QRCode(container, {
-                text: qrContent,
-                width: 200,
+            // 1. Génération du QR Code
+            // Configuration PRO : Noir pur, Haute correction d'erreur
+            new QRCode(container, {
+                text: input,
+                width: 200, // Taille standard
                 height: 200,
-                colorDark : "#000000",
+                colorDark : "#000000", // NOIR PUR DEMANDÉ
                 colorLight : "#ffffff",
                 correctLevel : QRCode.CorrectLevel.H
             });
+
+            // 2. Incrustation du Logo (Attendre le rendu du canvas)
+            setTimeout(() => {
+                const canvas = container.querySelector('canvas');
+                if (canvas) {
+                    const ctx = canvas.getContext('2d');
+                    
+                    // --- PARAMÈTRES LOGO RÉDUIT ---
+                    // On réduit la taille pour ne pas masquer trop de données
+                    // Un logo trop gros sur un QR dense peut empêcher la lecture
+                    const logoSize = 40; // TAILLE RÉDUITE (était 60px avant)
+                    
+                    const x = (canvas.width - logoSize) / 2;
+                    const y = (canvas.height - logoSize) / 2;
+
+                    // Carré blanc derrière le logo (contour)
+                    // Arrondi pour faire plus pro
+                    const padding = 3;
+                    ctx.fillStyle = "#ffffff";
+                    
+                    // Dessin d'un fond "propre"
+                    ctx.beginPath();
+                    ctx.roundRect(x - padding, y - padding, logoSize + (padding*2), logoSize + (padding*2), 5);
+                    ctx.fill();
+                    
+                    // Dessin du logo
+                    ctx.drawImage(logoImg, x, y, logoSize, logoSize);
+                }
+            }, 50);
         }
 
         function downloadPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             const input = document.getElementById('ussdInput').value;
-
-            // Récupérer l'image du QR Code (c'est un canvas ou une img générée par la lib)
             const qrCanvas = document.querySelector('#qrcode-container canvas');
+            
+            if(!qrCanvas) { alert("Veuillez d'abord générer le QR Code."); return; }
             const qrImgData = qrCanvas.toDataURL("image/png");
 
-            // --- Design du PDF ---
+            // --- Design PDF Professionnel ---
             
-            // Fond jaune en haut
-            doc.setFillColor(255, 215, 0); // Or/Jaune
+            // 1. Header sombre
+            doc.setFillColor(17, 24, 39); // Dark (matching CSS)
             doc.rect(0, 0, 210, 40, 'F');
+            
+            // 2. Titre Marque
+            doc.setFont("helvetica", "bolditalic");
+            doc.setFontSize(24);
+            doc.setTextColor(255, 255, 255);
+            doc.text("SpeedPay", 105, 25, null, null, "center");
 
-            // Titre
+            // 3. Cadre principal (Design épuré)
+            doc.setDrawColor(200, 200, 200);
+            doc.setLineWidth(0.5);
+            doc.roundedRect(60, 60, 90, 120, 3, 3, 'S'); // 'S' pour Stroke (contour seulement)
+
+            // 4. Titre Action
+            doc.setTextColor(0, 0, 0);
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(22);
-            doc.setTextColor(44, 62, 80);
-            doc.text("MotoPay Direct", 105, 25, null, null, "center");
-
-            // Instructions Client
-            doc.setFontSize(16);
-            doc.text("SCANNEZ POUR PAYER", 105, 60, null, null, "center");
-            
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(12);
-            doc.text("Ne perdez plus de temps à dicter le numéro !", 105, 70, null, null, "center");
-
-            // Image QR Code centrée
-            doc.addImage(qrImgData, 'PNG', 55, 80, 100, 100);
-
-            // Le code écrit en dessous (au cas où le scan ne marche pas)
-            doc.setFont("courier", "bold");
             doc.setFontSize(14);
-            doc.text("Code: " + input, 105, 190, null, null, "center");
+            doc.text("SCANNEZ POUR PAYER", 105, 80, null, null, "center");
 
-            // Instructions Motard (Zone de découpe)
-            doc.setDrawColor(150);
-            doc.setLineDash([5, 5], 0);
-            doc.line(10, 220, 200, 220);
-            
-            doc.setFont("helvetica", "italic");
-            doc.setFontSize(10);
-            doc.setTextColor(100);
-            doc.text("Découpez le carré ci-dessus et collez-le sur votre casque ou votre gilet.", 105, 230, null, null, "center");
+            // 5. Image QR
+            doc.addImage(qrImgData, 'PNG', 75, 90, 60, 60);
 
-            // Sauvegarde
-            doc.save("MotoPay_QR.pdf");
+            // 6. Code Manuel
+            doc.setFont("courier", "bold");
+            doc.setFontSize(12);
+            doc.setTextColor(50, 50, 50);
+            doc.text(input, 105, 165, null, null, "center");
+
+            // 7. Footer discret
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8);
+            doc.setTextColor(150);
+            doc.text("Ce badge est personnel. Ne partagez pas vos accès.", 105, 280, null, null, "center");
+
+            doc.save("Badge_SpeedPay_Pro.pdf");
         }
     </script>
 </body>
 </html>
-    
