@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotoPay Direct - Générateur de QR Code</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #FFD700; /* Jaune moto */
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --accent: #e74c3c;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: var(--dark);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 5px solid var(--primary);
+        }
+
+        h1 { margin: 0; font-size: 1.8rem; }
+        .subtitle { color: var(--primary); font-size: 0.9rem; }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        /* Section Cartes */
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .input-group {
+            margin: 20px 0;
+        }
+
+        input[type="text"] {
+            width: 80%;
+            padding: 15px;
+            font-size: 1.2rem;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+        }
+
+        .btn {
+            background-color: var(--dark);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn:hover { transform: scale(1.05); background-color: #34495e; }
+        .btn-download { background-color: var(--accent); }
+
+        #qrcode-container {
+            margin: 20px auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+        }
+
+        /* Instructions visuelles */
+        .steps {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            text-align: left;
+            margin-top: 20px;
+        }
+        .step {
+            flex: 1;
+            min-width: 250px;
+            margin: 10px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            border-left: 4px solid var(--primary);
+        }
+        .step h3 { margin-top: 0; color: var(--dark); }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+            font-size: 0.8rem;
+        }
+
+        /* Classe utilitaire pour cacher des éléments */
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>MotoPay Direct 🏍️</h1>
+        <div class="subtitle">Générez votre QR Code de paiement instantané</div>
+    </header>
+
+    <div class="container">
+        
+        <div class="card">
+            <h2>Comment ça marche ?</h2>
+            <div class="steps">
+                <div class="step">
+                    <h3>1. Pour le Motard</h3>
+                    <p>Entrez votre code USSD complet (ex: MOMO Pay). Téléchargez le PDF et collez le QR Code sur votre casque.</p>
+                </div>
+                <div class="step">
+                    <h3>2. Pour le Client</h3>
+                    <p>Le client scanne le QR Code avec sa caméra. Son téléphone compose automatiquement le code pour payer.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="generator-section">
+            <h2>Créer mon Code</h2>
+            <p>Entrez le code exact que vous tapez sur votre téléphone :</p>
+            
+            <div class="input-group">
+                <input type="text" id="ussdInput" placeholder="Ex: *182*8*1*07426422#" value="*182*8*1*07426422#">
+            </div>
+
+            <button class="btn" onclick="generateQR()">Générer le QR Code</button>
+
+            <div id="result-area" class="hidden">
+                <div id="qrcode-container"></div>
+                <p><em>Scannez ce code pour tester !</em></p>
+                <button class="btn btn-download" onclick="downloadPDF()">📥 Télécharger le PDF (A4)</button>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        © 2024 MotoPay Direct - Simplifiez vos courses.
+    </footer>
+
+    <script>
+        // Initialisation des variables
+        let qrcodeObj = null;
+
+        function generateQR() {
+            const input = document.getElementById('ussdInput').value.trim();
+            const resultArea = document.getElementById('result-area');
+            const container = document.getElementById('qrcode-container');
+
+            // Validation simple
+            if (!input.startsWith('*') || !input.endsWith('#')) {
+                alert("Le code doit commencer par * et finir par # (Format USSD standard).");
+                return;
+            }
+
+            // Nettoyer l'ancien code
+            container.innerHTML = "";
+            resultArea.classList.remove('hidden');
+
+            // Le format 'tel:' permet au téléphone de lancer l'appel
+            // Note: Certains scanners préfèrent le texte brut, mais tel: est plus standard pour l'action.
+            // Pour le code USSD, on utilise souvent simplement le texte brut car les scanners intelligents le reconnaissent.
+            // Nous allons utiliser le texte brut pour garantir la compatibilité USSD maximale.
+            const qrContent = input; 
+
+            // Génération du QR Code
+            qrcodeObj = new QRCode(container, {
+                text: qrContent,
+                width: 200,
+                height: 200,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+        }
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const input = document.getElementById('ussdInput').value;
+
+            // Récupérer l'image du QR Code (c'est un canvas ou une img générée par la lib)
+            const qrCanvas = document.querySelector('#qrcode-container canvas');
+            const qrImgData = qrCanvas.toDataURL("image/png");
+
+            // --- Design du PDF ---
+            
+            // Fond jaune en haut
+            doc.setFillColor(255, 215, 0); // Or/Jaune
+            doc.rect(0, 0, 210, 40, 'F');
+
+            // Titre
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(22);
+            doc.setTextColor(44, 62, 80);
+            doc.text("MotoPay Direct", 105, 25, null, null, "center");
+
+            // Instructions Client
+            doc.setFontSize(16);
+            doc.text("SCANNEZ POUR PAYER", 105, 60, null, null, "center");
+            
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(12);
+            doc.text("Ne perdez plus de temps à dicter le numéro !", 105, 70, null, null, "center");
+
+            // Image QR Code centrée
+            doc.addImage(qrImgData, 'PNG', 55, 80, 100, 100);
+
+            // Le code écrit en dessous (au cas où le scan ne marche pas)
+            doc.setFont("courier", "bold");
+            doc.setFontSize(14);
+            doc.text("Code: " + input, 105, 190, null, null, "center");
+
+            // Instructions Motard (Zone de découpe)
+            doc.setDrawColor(150);
+            doc.setLineDash([5, 5], 0);
+            doc.line(10, 220, 200, 220);
+            
+            doc.setFont("helvetica", "italic");
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            doc.text("Découpez le carré ci-dessus et collez-le sur votre casque ou votre gilet.", 105, 230, null, null, "center");
+
+            // Sauvegarde
+            doc.save("MotoPay_QR.pdf");
+        }
+    </script>
+</body>
+</html>
+    
