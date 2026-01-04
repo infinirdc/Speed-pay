@@ -389,20 +389,21 @@
 
             // --- Design PDF Professionnel ---
             
-            // 1. Header sombre
-            doc.setFillColor(17, 24, 39); // Dark (matching CSS)
+            // 1. Header (Fond blanc au lieu de sombre)
+            doc.setFillColor(255, 255, 255); 
             doc.rect(0, 0, 210, 40, 'F');
             
-            // 2. Titre Marque
+            // 2. Titre Marque (Noir sur fond blanc)
             doc.setFont("helvetica", "bolditalic");
-            doc.setFontSize(24);
-            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(28); // Légèrement agrandi pour l'impact
+            doc.setTextColor(17, 24, 39); // Couleur sombre d'origine
             doc.text("SpeedPay", 105, 25, null, null, "center");
 
-            // 3. Cadre principal (Design épuré)
+            // 3. Cadre principal (Ajusté pour le plus grand QR)
             doc.setDrawColor(200, 200, 200);
             doc.setLineWidth(0.5);
-            doc.roundedRect(60, 60, 90, 120, 3, 3, 'S'); // 'S' pour Stroke (contour seulement)
+            // On agrandit la hauteur du cadre à 130 pour laisser de l'air
+            doc.roundedRect(55, 60, 100, 130, 3, 3, 'S'); 
 
             // 4. Titre Action
             doc.setTextColor(0, 0, 0);
@@ -410,22 +411,24 @@
             doc.setFontSize(14);
             doc.text("SCANNEZ POUR PAYER", 105, 80, null, null, "center");
 
-            // 5. Image QR
-            doc.addImage(qrImgData, 'PNG', 75, 90, 60, 60);
+            // 5. Image QR (Agrandie de 60 à 80)
+            // Position X ajustée pour centrer (210 - 80) / 2 = 65
+            doc.addImage(qrImgData, 'PNG', 65, 90, 80, 80);
 
-            // 6. Code Manuel
+            // 6. Code Manuel (Position Y abaissée pour ne pas chevaucher)
             doc.setFont("courier", "bold");
             doc.setFontSize(12);
             doc.setTextColor(50, 50, 50);
-            doc.text(input, 105, 165, null, null, "center");
+            doc.text(input, 105, 182, null, null, "center");
 
             // 7. Footer discret
             doc.setFont("helvetica", "normal");
             doc.setFontSize(8);
             doc.setTextColor(150);
-            doc.text("Ce badge est personnel. Ne partagez pas vos accès.", 105, 280, null, null, "center");
+            doc.text("speedpay by INFINI.", 105, 280, null, null, "center");
 
             doc.save("Badge_SpeedPay_Pro.pdf");
+
         }
     </script>
 </body>
